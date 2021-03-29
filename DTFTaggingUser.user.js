@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        DTF Tagging User
 // @match       https://dtf.ru/*
-// @version     0.2
+// @version     0.2 (2021-03-29)
 // @license     MIT
 // @author      KekW / https://dtf.ru/u/182912-kekw
 // @description 27/3/2021
@@ -9,6 +9,10 @@
 // @grant       GM_setValue
 // @grant       GM_addValueChangeListener
 // @run-at      document-end
+// @icon        https://raw.githubusercontent.com/KekWCatra/DtfTaggingUser/main/tag.png
+// @icon64      https://raw.githubusercontent.com/KekWCatra/DtfTaggingUser/main/tag.png
+// @updateURL   https://github.com/KekWCatra/DtfTaggingUser/raw/main/DTFTaggingUser.user.js
+// @downloadURL https://github.com/KekWCatra/DtfTaggingUser/raw/main/DTFTaggingUser.user.js
 // ==/UserScript==
 
 let _kekw_dtfTagUser = {};
