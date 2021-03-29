@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        DTF Tagging User
 // @match       https://dtf.ru/*
-// @version     0.1
+// @version     0.2
 // @license     MIT
 // @author      KekW / https://dtf.ru/u/182912-kekw
 // @description 27/3/2021
@@ -46,6 +46,7 @@ let popupTagging = `
 						</fieldset>
 						<fieldset>
 							<input type="submit" id="_kekw_dtf_tag_set_user" value="Отправить">
+                            <input type="button" class="ui-button ui-button--2" id="_kekw_dtf_tag_clear_user" value="Очистить">
 						</fieldset>
 					</div>
 				</div>
@@ -81,14 +82,13 @@ function saveTags()
 function printTag()
 {
     Object.keys(_kekw_dtfTagUser).forEach(function(id) {
-        document.querySelectorAll('a[href*="/' + id + '-"][class*="comments__item__user"] > .comments__item__user__name').forEach(function(userNameHtml) {
-            if (userNameHtml.getElementsByClassName('_kekw_has_tag').length == 0) {
-                let spanTag = document.createElement('span');
-                spanTag.innerText = _kekw_dtfTagUser[id].split('|$|')[0];
-                spanTag.style.cssText = "background: " + _kekw_dtfTagUser[id].split('|$|')[1] + "!important; color:" + _kekw_dtfTagUser[id].split('|$|')[2] + "!important;height: 20px!important;line-height: 20px!important;padding: 1px 5px!important;";
-                spanTag.className = "ui-button ui-button--2 ui-button--small _kekw_has_tag";
-                userNameHtml.append(spanTag);
-            }
+        document.querySelectorAll('a[href*="/' + id + '-"][class*="comments__item__user"] > .comments__item__user__name:not(._kekw_has_tag), .content-header__info > a[href*="/' + id + '-"][class*="content-header-author"]:not(._kekw_has_tag), .subsite-card-title > a[href*="/' + id + '-"][class*="subsite-card-title__item--name"]:not(._kekw_has_tag)').forEach(function(userNameHtml) {
+            let spanTag = document.createElement('span');
+            spanTag.innerText = _kekw_dtfTagUser[id].split('|$|')[0];
+            spanTag.style.cssText = "background: " + _kekw_dtfTagUser[id].split('|$|')[1] + "!important; color:" + _kekw_dtfTagUser[id].split('|$|')[2] + "!important;height: 20px!important;line-height: 20px!important;padding: 1px 5px!important;margin-left: 5px;";
+            spanTag.className = "ui-button ui-button--2 ui-button--small";
+            userNameHtml.append(spanTag);
+            userNameHtml.classList.add('_kekw_has_tag');
         });
     });
     setTimeout(printTag, 500);
@@ -122,9 +122,14 @@ function setTag()
     document.getElementById('_kekw_popup_main_tagging').remove();
 }
 
-function getValue()
+function clearTag()
 {
-    return _kekw_dtfTagUser[userId];
+    delete _kekw_dtfTagUser[userId];
+    saveTags();
+
+    document.getElementById('_kekw_dtf_tag').value = '';
+    document.getElementById('_kekw_color_dtf_tag_bg').value = '#000000';
+    document.getElementById('_kekw_color_dtf_tag_text').value = '#000000';
 }
 
 function popupSetTag()
@@ -132,7 +137,7 @@ function popupSetTag()
     body.insertAdjacentHTML('beforeend', popupTagging);
     document.getElementById('userNameDtfTagging').innerText = userName;
 
-    let dataTag = getValue();
+    let dataTag = _kekw_dtfTagUser[userId];
     if (dataTag) {
         document.getElementById('_kekw_dtf_tag').value = dataTag.split('|$|')[0];
         document.getElementById('_kekw_color_dtf_tag_bg').value = dataTag.split('|$|')[1];
@@ -146,6 +151,9 @@ function popupSetTag()
 
     let setTagButton = document.getElementById('_kekw_dtf_tag_set_user');
     setTagButton.addEventListener('click', setTag);
+
+    let clearTagButtom = document.getElementById('_kekw_dtf_tag_clear_user');
+    clearTagButtom.addEventListener('click', clearTag);
 }
 
 function addTaggingButton()
@@ -159,9 +167,8 @@ function addTaggingButton()
 
         let divButton = document.createElement('div');
 
-        divButton.onclick = function() {
-            popupSetTag();
-        };
+        divButton.onclick = popupSetTag;
+
         divButton.className = '_dtf_tagging_user v-button v-button--blue v-button--size-default';
         divButton.innerHTML = `<span class="v-button__label">✎ Тегнуть</span>`;
 
