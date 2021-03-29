@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        DTF Tagging User
 // @match       https://dtf.ru/*
-// @version     0.2 (2021-03-29)
+// @version     0.3 (2021-03-29)
 // @license     MIT
 // @author      KekW / https://dtf.ru/u/182912-kekw
 // @description 27/3/2021
@@ -48,6 +48,12 @@ let popupTagging = `
 						<fieldset>
 							<textarea name="_kekw_dtf_tag" id="_kekw_dtf_tag" tabindex="1" placeholder="Тег (ананасик/шитпостер/анимешник/etc)"></textarea>
 						</fieldset>
+                        <fieldset>
+                            <span class="ui-checkbox">
+                            	<input type="checkbox" class="checkbox__input" name="_kekw_tag_as_name" id="_kekw_tag_as_name" autocomplete="off" data-gtm="User — Settings — Use Tag As UserName" data-processed="true">
+                            </span>
+                            <label for="_kekw_tag_as_name">Использовать как основной никнейм</label>
+                        </fieldset>
 						<fieldset>
 							<input type="submit" id="_kekw_dtf_tag_set_user" value="Отправить">
                             <input type="button" class="ui-button ui-button--2" id="_kekw_dtf_tag_clear_user" value="Очистить">
@@ -88,10 +94,37 @@ function printTag()
     Object.keys(_kekw_dtfTagUser).forEach(function(id) {
         document.querySelectorAll('a[href*="/' + id + '-"][class*="comments__item__user"] > .comments__item__user__name:not(._kekw_has_tag), .content-header__info > a[href*="/' + id + '-"][class*="content-header-author"]:not(._kekw_has_tag), .subsite-card-title > a[href*="/' + id + '-"][class*="subsite-card-title__item--name"]:not(._kekw_has_tag)').forEach(function(userNameHtml) {
             let spanTag = document.createElement('span');
-            spanTag.innerText = _kekw_dtfTagUser[id].split('|$|')[0];
-            spanTag.style.cssText = "background: " + _kekw_dtfTagUser[id].split('|$|')[1] + "!important; color:" + _kekw_dtfTagUser[id].split('|$|')[2] + "!important;height: 20px!important;line-height: 20px!important;padding: 1px 5px!important;margin-left: 5px;";
+            let [tag, tag_bg, tag_text, tag_as_name] = _kekw_dtfTagUser[id].split('|$|');
+            spanTag.innerText = tag;
+            spanTag.style.cssText = "background: " + tag_bg + "!important; color:" + tag_text + "!important;height: 20px!important;line-height: 20px!important;padding: 1px 5px!important;margin-left: 5px;";
             spanTag.className = "ui-button ui-button--2 ui-button--small";
-            userNameHtml.append(spanTag);
+            if (tag_as_name == "1") {
+                let className = userNameHtml.classList.item(userNameHtml.classList.length - 1);
+                switch(className) {
+                    case "comments__item__user__name":
+                        spanTag.style.marginLeft = '0px';
+                        userNameHtml.replaceChild(spanTag, userNameHtml.lastElementChild);
+                        break;
+                    case "subsite-card-title__item--name":
+                        spanTag.style.marginLeft = '0px';
+                        spanTag.style.marginRight = 'var(--items-gap)';
+                        userNameHtml.parentElement.replaceChild(spanTag, userNameHtml.parentElement.firstElementChild);
+                        break;
+                    case "content-header__item":
+                        if (userNameHtml.classList.item(userNameHtml.classList.length - 2) == "content-header-author--subsite") {
+                            spanTag.style.marginLeft = '32px';
+                        } else {
+                            spanTag.style.marginLeft = '0px';
+                        }
+                        userNameHtml.replaceChild(spanTag, userNameHtml.lastElementChild);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else {
+                userNameHtml.append(spanTag);
+            }
             userNameHtml.classList.add('_kekw_has_tag');
         });
     });
@@ -119,7 +152,9 @@ function setTag()
         colorText = '#ffffff';
     }
 
-    Object.assign(_kekw_dtfTagUser, { [userId]: tag + '|$|' + colorBg + '|$|' + colorText });
+    let asUserName = document.getElementById('_kekw_tag_as_name').checked ? 1 : 0;
+
+    Object.assign(_kekw_dtfTagUser, { [userId]: [tag, colorBg, colorText, asUserName].join('|$|') });
 
     saveTags();
 
@@ -134,6 +169,8 @@ function clearTag()
     document.getElementById('_kekw_dtf_tag').value = '';
     document.getElementById('_kekw_color_dtf_tag_bg').value = '#000000';
     document.getElementById('_kekw_color_dtf_tag_text').value = '#000000';
+    document.getElementById('_kekw_tag_as_name').checked = false;
+    document.getElementById('_kekw_tag_as_name').parentElement.classList.remove('ui-checkbox--checked');
 }
 
 function popupSetTag()
@@ -143,9 +180,15 @@ function popupSetTag()
 
     let dataTag = _kekw_dtfTagUser[userId];
     if (dataTag) {
-        document.getElementById('_kekw_dtf_tag').value = dataTag.split('|$|')[0];
-        document.getElementById('_kekw_color_dtf_tag_bg').value = dataTag.split('|$|')[1];
-        document.getElementById('_kekw_color_dtf_tag_text').value = dataTag.split('|$|')[2];
+        let [tag, tag_bg, tag_text, tag_as_name] = dataTag.split('|$|');
+        document.getElementById('_kekw_dtf_tag').value = tag;
+        document.getElementById('_kekw_color_dtf_tag_bg').value = tag_bg;
+        document.getElementById('_kekw_color_dtf_tag_text').value = tag_text;
+        if (tag_as_name == "1") {
+            let chekbox = document.getElementById('_kekw_tag_as_name');
+            chekbox.checked = true;
+            chekbox.parentElement.classList.add('ui-checkbox--checked')
+        }
     }
 
     let closePopup = document.getElementById('_kekw_close_dtf_popup_tagging');
