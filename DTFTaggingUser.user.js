@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name        DTF Tagging User
 // @match       https://dtf.ru/*
-// @version     0.3 (2021-03-29)
+// @version     0.3 FULL (2021-03-30)
 // @license     MIT
-// @author      KekW / https://dtf.ru/u/182912-kekw
-// @description 27/3/2021
+// @author      KekW - https://dtf.ru/u/182912-kekw / πρόσταγμα - https://dtf.ru/u/74342-prostagma
+// @description Задавайте свои метки для пользователей.
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_addValueChangeListener
@@ -95,36 +95,35 @@ function printTag()
         document.querySelectorAll('a[href*="/' + id + '-"][class*="comments__item__user"] > .comments__item__user__name:not(._kekw_has_tag), .content-header__info > a[href*="/' + id + '-"][class*="content-header-author"]:not(._kekw_has_tag), .subsite-card-title > a[href*="/' + id + '-"][class*="subsite-card-title__item--name"]:not(._kekw_has_tag)').forEach(function(userNameHtml) {
             let spanTag = document.createElement('span');
             let [tag, tag_bg, tag_text, tag_as_name] = _kekw_dtfTagUser[id].split('|$|');
+
             spanTag.innerText = tag;
             spanTag.style.cssText = "background: " + tag_bg + "!important; color:" + tag_text + "!important;height: 20px!important;line-height: 20px!important;padding: 1px 5px!important;margin-left: 5px;";
             spanTag.className = "ui-button ui-button--2 ui-button--small";
-            if (tag_as_name == "1") {
+
+            if (tag_as_name == 1) {
                 let className = userNameHtml.classList.item(userNameHtml.classList.length - 1);
                 switch(className) {
-                    case "comments__item__user__name":
+                    case 'comments__item__user__name':
                         spanTag.style.marginLeft = '0px';
-                        userNameHtml.replaceChild(spanTag, userNameHtml.lastElementChild);
+                        userNameHtml.getElementsByClassName('user_name')[0].replaceWith(spanTag);
                         break;
-                    case "subsite-card-title__item--name":
+                    case 'subsite-card-title__item--name':
                         spanTag.style.marginLeft = '0px';
                         spanTag.style.marginRight = 'var(--items-gap)';
                         userNameHtml.parentElement.replaceChild(spanTag, userNameHtml.parentElement.firstElementChild);
                         break;
-                    case "content-header__item":
-                        if (userNameHtml.classList.item(userNameHtml.classList.length - 2) == "content-header-author--subsite") {
-                            spanTag.style.marginLeft = '32px';
-                        } else {
-                            spanTag.style.marginLeft = '0px';
-                        }
-                        userNameHtml.replaceChild(spanTag, userNameHtml.lastElementChild);
+                    case 'content-header__item':
+                        spanTag.style.marginLeft = userNameHtml.classList.item(userNameHtml.classList.length - 2) == 'content-header-author--subsite' ? '32px' : '0px';
+
+                        userNameHtml.getElementsByClassName('content-header-author__name')[0].replaceWith(spanTag);
                         break;
                     default:
                         break;
                 }
-            }
-            else {
+            } else {
                 userNameHtml.append(spanTag);
             }
+
             userNameHtml.classList.add('_kekw_has_tag');
         });
     });
@@ -184,7 +183,7 @@ function popupSetTag()
         document.getElementById('_kekw_dtf_tag').value = tag;
         document.getElementById('_kekw_color_dtf_tag_bg').value = tag_bg;
         document.getElementById('_kekw_color_dtf_tag_text').value = tag_text;
-        if (tag_as_name == "1") {
+        if (tag_as_name == 1) {
             let chekbox = document.getElementById('_kekw_tag_as_name');
             chekbox.checked = true;
             chekbox.parentElement.classList.add('ui-checkbox--checked')
@@ -205,21 +204,22 @@ function popupSetTag()
 
 function addTaggingButton()
 {
-    let target = document.querySelector('.etc_control[data-subsite-url]');
+    let target = document.querySelector('.v-header--with-actions > .v-header__actions');
     let loc = window.location;
 
     if (target && loc.toString().indexOf('/u/') >= 0 && !document.querySelector('._dtf_tagging_user')) {
         userName = document.querySelector('div.v-header-title__main > a.v-header-title__name').innerText.toString();
-        userId = target.dataset.userId;
+        userId = target.querySelector('[data-subsite-id]').dataset.subsiteId;
+        console.log(target.querySelector('[data-subsite-id]').dataset.subsiteId);
 
         let divButton = document.createElement('div');
 
         divButton.onclick = popupSetTag;
 
-        divButton.className = '_dtf_tagging_user v-button v-button--blue v-button--size-default';
+        divButton.className = '_dtf_tagging_user v-button v-button--default v-button--size-default';
         divButton.innerHTML = `<span class="v-button__label">✎ Тегнуть</span>`;
 
-        target.insertAdjacentElement('beforebegin', divButton);
+        target.insertAdjacentElement('afterbegin', divButton);
     }
 
     setTimeout(addTaggingButton, 500);
