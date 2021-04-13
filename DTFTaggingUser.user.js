@@ -55,7 +55,7 @@ let popupTagging = `
                             <label for="_kekw_tag_as_name">Использовать как основной никнейм</label>
                         </fieldset>
 						<fieldset>
-							<input type="submit" id="_kekw_dtf_tag_set_user" value="Отправить">
+							<input type="submit" id="_kekw_dtf_tag_set_user" value="Сохранить">
                             <input type="button" class="ui-button ui-button--2" id="_kekw_dtf_tag_clear_user" value="Очистить">
 						</fieldset>
 					</div>
