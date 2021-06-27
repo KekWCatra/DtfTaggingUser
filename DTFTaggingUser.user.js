@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        DTF Tagging User
 // @match       https://dtf.ru/*
-// @version     0.994223161548 (2021-06-27)
+// @version     0.994223161584 (2021-06-27)
 // @license     MIT
 // @author      KekW - https://dtf.ru/u/182912-kekw / πρόσταγμα - https://dtf.ru/u/74342-prostagma
 // @description Задавайте свои метки для пользователей.
