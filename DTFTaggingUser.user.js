@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        DTF Tagging User
 // @match       https://dtf.ru/*
-// @version     0.3 FULL (2021-03-30)
+// @version     0.994223161548 (2021-06-27)
 // @license     MIT
 // @author      KekW - https://dtf.ru/u/182912-kekw / πρόσταγμα - https://dtf.ru/u/74342-prostagma
 // @description Задавайте свои метки для пользователей.
@@ -70,14 +70,30 @@ let head = document.head || document.getElementsByTagName('head')[0];
 let body = document.body || document.getElementsByTagName('body')[0];
 
 let DocStyle = document.createElement('style');
+let kekwPopupTagCorrectBg = '';
+
+if (body.classList.contains('s42-light') || body.classList.contains('s42-no-themes') || !body.classList.contains('s42-dtf-dark') && !document.getElementById('stylus-1')) {
+    kekwPopupTagCorrectBg = `
+#_kekw_popup_main_tagging > div.popup__container.popup__container--shown > div > div.popup__container__window__tpl {
+    background: #ffffff!important;
+}`;
+}
+
+head.appendChild(DocStyle);
+DocStyle.type = 'text/css';
+if (DocStyle.styleSheet){
+    DocStyle.styleSheet.cssText = kekwPopupTagCorrectBg;
+} else {
+    DocStyle.appendChild(document.createTextNode(kekwPopupTagCorrectBg));
+}
 
 function checkColor(color)
 {
     color = color.substring(1);
     let rgb = parseInt(color, 16);
     let r = (rgb >> 16) & 0xff;
-    let g = (rgb >>  8) & 0xff;
-    let b = (rgb >>  0) & 0xff;
+    let g = (rgb >> 8) & 0xff;
+    let b = (rgb >> 0) & 0xff;
 
     let luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
 
@@ -89,12 +105,33 @@ function saveTags()
     GM_setValue('_dtf_user_tags', JSON.stringify(_kekw_dtfTagUser, (k, v) => v ? v : void 0));
 }
 
+function printRatingTag()
+{
+    Object.keys(_kekw_dtfTagUser).forEach(function(id) {
+        document.querySelectorAll('a[href*="/' + id + '-"][class*="vote__users__item"] > .vote__users__item__name:not(._kekw_has_tag)').forEach(function(userNameHtml) {
+            userNameHtml.classList.add('_kekw_has_tag');
+
+            let spanTag = document.createElement('span');
+            let [tag, tag_bg, tag_text, tag_as_name] = _kekw_dtfTagUser[id].split('|$|');
+            spanTag.innerText = tag;
+            spanTag.style.cssText = "background: " + tag_bg + "!important; color:" + tag_text + "!important;height: 20px!important;line-height: 20px!important;padding: 1px 5px!important;margin-left: 5px;";
+            spanTag.className = "ui-button ui-button--2 ui-button--small";
+
+            tag_as_name == 1 ? userNameHtml.replaceWith(spanTag) : userNameHtml.append(spanTag);;
+        });
+    });
+}
+
 function printTag()
 {
     Object.keys(_kekw_dtfTagUser).forEach(function(id) {
-        document.querySelectorAll('a[href*="/' + id + '-"][class*="comments__item__user"] > .comments__item__user__name:not(._kekw_has_tag), .content-header__info > a[href*="/' + id + '-"][class*="content-header-author"]:not(._kekw_has_tag), .subsite-card-title > a[href*="/' + id + '-"][class*="subsite-card-title__item--name"]:not(._kekw_has_tag)').forEach(function(userNameHtml) {
+        document.querySelectorAll('a[href*="/' + id + '-"][class*="comments__item__user"] > .comments__item__user__name:not(._kekw_has_tag), .content-header__info > a[href*="/' + id + '-"][class*="content-header-author"]:not(._kekw_has_tag), .subsite-card-title > a[href*="/' + id + '-"][class*="subsite-card-title__item--name"]:not(._kekw_has_tag), a[href*="/' + id + '-"][class*="v-list__item"] > div[class*="v-list__label"]:not(._kekw_has_tag)').forEach(function(userNameHtml) {
             let spanTag = document.createElement('span');
             let [tag, tag_bg, tag_text, tag_as_name] = _kekw_dtfTagUser[id].split('|$|');
+
+            if (userNameHtml.classList.contains('_kekw_has_tag')) {
+                return;
+            }
 
             spanTag.innerText = tag;
             spanTag.style.cssText = "background: " + tag_bg + "!important; color:" + tag_text + "!important;height: 20px!important;line-height: 20px!important;padding: 1px 5px!important;margin-left: 5px;";
@@ -105,29 +142,37 @@ function printTag()
                 switch(className) {
                     case 'comments__item__user__name':
                         spanTag.style.marginLeft = '0px';
+                        userNameHtml.classList.add('_kekw_has_tag');
                         userNameHtml.getElementsByClassName('user_name')[0].replaceWith(spanTag);
                         break;
                     case 'subsite-card-title__item--name':
                         spanTag.style.marginLeft = '0px';
                         spanTag.style.marginRight = 'var(--items-gap)';
+                        userNameHtml.classList.add('_kekw_has_tag');
                         userNameHtml.parentElement.replaceChild(spanTag, userNameHtml.parentElement.firstElementChild);
                         break;
                     case 'content-header__item':
                         spanTag.style.marginLeft = userNameHtml.classList.item(userNameHtml.classList.length - 2) == 'content-header-author--subsite' ? '32px' : '0px';
-
+                        userNameHtml.classList.add('_kekw_has_tag');
                         userNameHtml.getElementsByClassName('content-header-author__name')[0].replaceWith(spanTag);
+                        break;
+                    case 'v-list__label':
+                        spanTag.style.marginLeft = '0px';
+                        spanTag.style.setProperty('font-size', "16px");
+                        spanTag.style.padding = '3px 6px';
+                        userNameHtml.classList.add('_kekw_has_tag');
+                        userNameHtml.replaceWith(spanTag);
                         break;
                     default:
                         break;
                 }
             } else {
+                userNameHtml.classList.add('_kekw_has_tag');
                 userNameHtml.append(spanTag);
             }
 
-            userNameHtml.classList.add('_kekw_has_tag');
         });
     });
-    setTimeout(printTag, 500);
 }
 
 function setTag()
@@ -167,7 +212,7 @@ function clearTag()
 
     document.getElementById('_kekw_dtf_tag').value = '';
     document.getElementById('_kekw_color_dtf_tag_bg').value = '#000000';
-    document.getElementById('_kekw_color_dtf_tag_text').value = '#000000';
+    document.getElementById('_kekw_color_dtf_tag_text').value = '#ffffff';
     document.getElementById('_kekw_tag_as_name').checked = false;
     document.getElementById('_kekw_tag_as_name').parentElement.classList.remove('ui-checkbox--checked');
 }
@@ -175,6 +220,7 @@ function clearTag()
 function popupSetTag()
 {
     body.insertAdjacentHTML('beforeend', popupTagging);
+    userName = document.querySelector('div.v-header-title__main > a.v-header-title__name').innerText.toString();
     document.getElementById('userNameDtfTagging').innerText = userName;
 
     let dataTag = _kekw_dtfTagUser[userId];
@@ -207,10 +253,8 @@ function addTaggingButton()
     let target = document.querySelector('.v-header--with-actions > .v-header__actions');
     let loc = window.location;
 
-    if (target && loc.toString().indexOf('/u/') >= 0 && !document.querySelector('._dtf_tagging_user')) {
-        userName = document.querySelector('div.v-header-title__main > a.v-header-title__name').innerText.toString();
+    if (target && loc.toString().indexOf('/u/') >= 0 && !document.querySelector('._dtf_tagging_user') && !document.querySelector('a[href*="/settings"][class*="v-button"]')) {
         userId = target.querySelector('[data-subsite-id]').dataset.subsiteId;
-        console.log(target.querySelector('[data-subsite-id]').dataset.subsiteId);
 
         let divButton = document.createElement('div');
 
@@ -221,8 +265,6 @@ function addTaggingButton()
 
         target.insertAdjacentElement('afterbegin', divButton);
     }
-
-    setTimeout(addTaggingButton, 500);
 }
 
 function init(run)
@@ -232,13 +274,18 @@ function init(run)
     } catch (e) {
         _kekw_dtfTagUser = {};
     }
-
-    if (!run) {
-        addTaggingButton();
-    }
-
-    printTag();
 }
+
+addEventListener('DOMContentLoaded', function() {
+    addTaggingButton();
+    printTag();
+});
+
+addEventListener('DOMNodeInserted', function() {
+    addTaggingButton();
+    printTag();
+    printRatingTag();
+});
 
 init(false);
 GM_addValueChangeListener('_dtf_user_tags', function(changes, namespace) {
