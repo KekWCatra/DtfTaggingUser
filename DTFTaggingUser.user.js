@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        DTF Tagging User
 // @match       https://dtf.ru/*
-// @version     0.994223161584 (2021-06-27)
+// @version     1.0 (2021-08-02)
 // @license     MIT
 // @author      KekW - https://dtf.ru/u/182912-kekw / πρόσταγμα - https://dtf.ru/u/74342-prostagma
 // @description Задавайте свои метки для пользователей.
@@ -276,6 +276,11 @@ function init(run)
     }
 }
 
+init(false);
+GM_addValueChangeListener('_dtf_user_tags', function(changes, namespace) {
+    init(true);
+});
+
 addEventListener('DOMContentLoaded', function() {
     addTaggingButton();
     printTag();
@@ -285,9 +290,4 @@ addEventListener('DOMNodeInserted', function() {
     addTaggingButton();
     printTag();
     printRatingTag();
-});
-
-init(false);
-GM_addValueChangeListener('_dtf_user_tags', function(changes, namespace) {
-    init(true);
 });
