@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        DTF Tagging User
 // @match       https://dtf.ru/*
-// @version     1.0 (2021-08-02)
+// @version     1.1 (2021-09-24)
 // @license     MIT
 // @author      KekW - https://dtf.ru/u/182912-kekw / πρόσταγμα - https://dtf.ru/u/74342-prostagma
 // @description Задавайте свои метки для пользователей.
@@ -108,7 +108,7 @@ function saveTags()
 function printRatingTag()
 {
     Object.keys(_kekw_dtfTagUser).forEach(function(id) {
-        document.querySelectorAll('a[href*="/' + id + '-"][class*="vote__users__item"] > .vote__users__item__name:not(._kekw_has_tag)').forEach(function(userNameHtml) {
+        document.querySelectorAll('a[href*="/' + id + '-"][class*="popover-item"] > .popover-item__main:not(._kekw_has_tag)').forEach(function(userNameHtml) {
             userNameHtml.classList.add('_kekw_has_tag');
 
             let spanTag = document.createElement('span');
@@ -117,7 +117,7 @@ function printRatingTag()
             spanTag.style.cssText = "background: " + tag_bg + "!important; color:" + tag_text + "!important;height: 20px!important;line-height: 20px!important;padding: 1px 5px!important;margin-left: 5px;";
             spanTag.className = "ui-button ui-button--2 ui-button--small";
 
-            tag_as_name == 1 ? userNameHtml.replaceWith(spanTag) : userNameHtml.append(spanTag);;
+            tag_as_name == 1 ? userNameHtml.replaceWith(spanTag) : userNameHtml.getElementsByClassName('popover-item__label')[0].append(spanTag);;
         });
     });
 }
@@ -125,7 +125,7 @@ function printRatingTag()
 function printTag()
 {
     Object.keys(_kekw_dtfTagUser).forEach(function(id) {
-        document.querySelectorAll('a[href*="/' + id + '-"][class*="comments__item__user"] > .comments__item__user__name:not(._kekw_has_tag), .content-header__info > a[href*="/' + id + '-"][class*="content-header-author"]:not(._kekw_has_tag), .subsite-card-title > a[href*="/' + id + '-"][class*="subsite-card-title__item--name"]:not(._kekw_has_tag), a[href*="/' + id + '-"][class*="v-list__item"] > div[class*="v-list__label"]:not(._kekw_has_tag)').forEach(function(userNameHtml) {
+        document.querySelectorAll('a[href*="/' + id + '-"][class*="comment-user"] > .comment-user__name:not(._kekw_has_tag), .content-header__info > a[href*="/' + id + '-"][class*="content-header-author"]:not(._kekw_has_tag), .subsite-card-title > a[href*="/' + id + '-"][class*="subsite-card-title__item--name"]:not(._kekw_has_tag), a[href*="/' + id + '-"][class*="v-list__item"] > div[class*="v-list__label"]:not(._kekw_has_tag)').forEach(function(userNameHtml) {
             let spanTag = document.createElement('span');
             let [tag, tag_bg, tag_text, tag_as_name] = _kekw_dtfTagUser[id].split('|$|');
 
@@ -140,10 +140,11 @@ function printTag()
             if (tag_as_name == 1) {
                 let className = userNameHtml.classList.item(userNameHtml.classList.length - 1);
                 switch(className) {
-                    case 'comments__item__user__name':
+                    case 'comment-user__name':
+                        console.log(userNameHtml);
                         spanTag.style.marginLeft = '0px';
                         userNameHtml.classList.add('_kekw_has_tag');
-                        userNameHtml.getElementsByClassName('user_name')[0].replaceWith(spanTag);
+                        userNameHtml.replaceWith(spanTag);
                         break;
                     case 'subsite-card-title__item--name':
                         spanTag.style.marginLeft = '0px';
@@ -196,7 +197,7 @@ function setTag()
         colorText = '#ffffff';
     }
 
-    let asUserName = document.getElementById('_kekw_tag_as_name').checked ? 1 : 0;
+    let asUserName = document.getElementById('_kekw_tag_as_name').parentElement.classList.contains('ui-checkbox--checked') ? 1 : 0;
 
     Object.assign(_kekw_dtfTagUser, { [userId]: [tag, colorBg, colorText, asUserName].join('|$|') });
 
@@ -222,7 +223,6 @@ function popupSetTag()
     body.insertAdjacentHTML('beforeend', popupTagging);
     userName = document.querySelector('div.v-header-title__main > a.v-header-title__name').innerText.toString();
     document.getElementById('userNameDtfTagging').innerText = userName;
-
     let dataTag = _kekw_dtfTagUser[userId];
     if (dataTag) {
         let [tag, tag_bg, tag_text, tag_as_name] = dataTag.split('|$|');
