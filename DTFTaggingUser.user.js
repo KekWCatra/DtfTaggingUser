@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        DTF Tagging User
 // @match       https://dtf.ru/*
-// @version     1.1 (2021-09-24)
+// @version     1.2 (2021-09-26)
 // @license     MIT
 // @author      KekW - https://dtf.ru/u/182912-kekw / πρόσταγμα - https://dtf.ru/u/74342-prostagma
 // @description Задавайте свои метки для пользователей.
@@ -169,7 +169,7 @@ function printTag()
                 }
             } else {
                 userNameHtml.classList.add('_kekw_has_tag');
-                userNameHtml.append(spanTag);
+                userNameHtml.parentElement.append(spanTag);
             }
 
         });
