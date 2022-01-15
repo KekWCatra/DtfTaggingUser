@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        DTF Tagging User
 // @match       https://dtf.ru/*
-// @version     1.3 (2022-01-15)
+// @version     1.3.1 (2022-01-15)
 // @license     MIT
 // @author      Токсичная Мразь - https://dtf.ru/u/182912-toksichnaya-mraz
 // @description Задавайте свои метки для пользователей.
@@ -69,24 +69,6 @@ let popupTagging = `
 let head = document.head || document.getElementsByTagName('head')[0];
 let body = document.body || document.getElementsByTagName('body')[0];
 
-let DocStyle = document.createElement('style');
-let kekwPopupTagCorrectBg = '';
-
-if (body.classList.contains('s42-light') || body.classList.contains('s42-no-themes') || !body.classList.contains('s42-dtf-dark') && !document.getElementById('stylus-1')) {
-    kekwPopupTagCorrectBg = `
-#_kekw_popup_main_tagging > div.popup__container.popup__container--shown > div > div.popup__container__window__tpl {
-    background: #ffffff!important;
-}`;
-}
-
-head.appendChild(DocStyle);
-DocStyle.type = 'text/css';
-if (DocStyle.styleSheet){
-    DocStyle.styleSheet.cssText = kekwPopupTagCorrectBg;
-} else {
-    DocStyle.appendChild(document.createTextNode(kekwPopupTagCorrectBg));
-}
-
 function checkColor(color)
 {
     color = color.substring(1);
@@ -103,23 +85,6 @@ function checkColor(color)
 function saveTags()
 {
     GM_setValue('_dtf_user_tags', JSON.stringify(_kekw_dtfTagUser, (k, v) => v ? v : void 0));
-}
-
-function printRatingTag()
-{
-    Object.keys(_kekw_dtfTagUser).forEach(function(id) {
-        document.querySelectorAll('a[href*="/' + id + '-"][class*="popover-item"] > .popover-item__main:not(._kekw_has_tag)').forEach(function(userNameHtml) {
-            userNameHtml.classList.add('_kekw_has_tag');
-
-            let spanTag = document.createElement('span');
-            let [tag, tag_bg, tag_text, tag_as_name] = _kekw_dtfTagUser[id].split('|$|');
-            spanTag.innerText = tag;
-            spanTag.style.cssText = "background: " + tag_bg + "!important; color:" + tag_text + "!important;height: 20px!important;line-height: 20px!important;padding: 1px 5px!important;margin-left: 5px;";
-            spanTag.className = "ui-button ui-button--2 ui-button--small";
-
-            tag_as_name == 1 ? userNameHtml.replaceWith(spanTag) : userNameHtml.getElementsByClassName('popover-item__label')[0].append(spanTag);;
-        });
-    });
 }
 
 function printTag()
