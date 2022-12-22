@@ -4,6 +4,7 @@
 // @version     1.3.2 (2022-12-22)
 // @license     MIT
 // @author      KekW aka Токсичная Мразь aka Милый Мальчик - https://dtf.ru/u/182912-milyy-malchik
+// @gratitude 	πρόσταγμα - https://dtf.ru/u/74342-prostagma
 // @description Задавайте свои метки для пользователей.
 // @grant       GM_getValue
 // @grant       GM_setValue
