@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name        DTF Tagging User
 // @match       https://dtf.ru/*
-// @version     1.3.1 (2022-01-15)
+// @version     1.3.2 (2022-12-22)
 // @license     MIT
-// @author      Токсичная Мразь - https://dtf.ru/u/182912-toksichnaya-mraz
+// @author      KekW aka Токсичная Мразь aka Милый Мальчик - https://dtf.ru/u/182912-milyy-malchik
 // @description Задавайте свои метки для пользователей.
 // @grant       GM_getValue
 // @grant       GM_setValue
@@ -89,8 +89,14 @@ function saveTags()
 
 function printTag()
 {
-    document.querySelectorAll('a[href*=".ru/u/"][class*="comment__author"]:not(._kekw_has_tag), .content-header__info > a[href*=".ru/u/"][class*="content-header-author"]:not(._kekw_has_tag), .subsite-card-title > a[href*=".ru/u/"][class*="subsite-card-title__item--name"]:not(._kekw_has_tag), a[href*=".ru/u/"][class*="v-list__item"] > div[class*="v-list__label"]:not(._kekw_has_tag)').forEach(function(userNameHtml) {
-        let iHateDTF = userNameHtml.href.split('/u/');
+    document.querySelectorAll('a[href*=".ru/u/"][class*="comment__author"]:not(._kekw_has_tag), .content-header-author > a[href*=".ru/u/"] > div[class="content-header-author__name"]:not(._kekw_has_tag), .subsite-card-title > a[href*=".ru/u/"][class*="subsite-card-title__item--name"]:not(._kekw_has_tag), a[href*="/u/"][class*="v-header-title__name"]:not(._kekw_has_tag)').forEach(function(userNameHtml) {
+        let iHateDTF = '';
+        if (userNameHtml.classList.contains('content-header-author__name')) {
+            iHateDTF = userNameHtml.parentElement.href.split('/u/');
+        } else {
+            iHateDTF = userNameHtml.href.split('/u/');
+        }
+
         iHateDTF = iHateDTF[1].split('-');
         iHateDTF = iHateDTF[0];
         if (iHateDTF in _kekw_dtfTagUser) {
@@ -127,26 +133,20 @@ function printTag()
                     userNameHtml.classList.add('_kekw_has_tag');
                     userNameHtml.append(spanTag);
                 }
-            } else if (userNameHtml.classList.contains('content-header__item')) {
+            } else if (userNameHtml.classList.contains('content-header-author__name')) {
                 if (tag_as_name == 1) {
                     spanTag.style.marginLeft = userNameHtml.classList.item(userNameHtml.classList.length - 2) == 'content-header-author--subsite' ? '32px' : '0px';
                     userNameHtml.classList.add('_kekw_has_tag');
-                    userNameHtml.getElementsByClassName('content-header-author__name')[0].replaceWith(spanTag);
+                    userNameHtml.innerHTML = spanTag.outerHTML;
                 } else {
                     userNameHtml.classList.add('_kekw_has_tag');
                     userNameHtml.insertAdjacentElement('beforeend', spanTag);
                 }
-            } else if (userNameHtml.classList.contains('v-list__label')) {
-                if (tag_as_name == 1) {
-                    spanTag.style.marginLeft = '0px';
-                    spanTag.style.setProperty('font-size', "16px");
-                    spanTag.style.padding = '3px 6px';
-                    userNameHtml.classList.add('_kekw_has_tag');
-                    userNameHtml.replaceWith(spanTag);
-                } else {
+            } else if (userNameHtml.classList.contains('v-header-title__name')) {
+
                     userNameHtml.classList.add('_kekw_has_tag');
                     userNameHtml.parentElement.append(spanTag);
-                }
+
             }
         }
     });
